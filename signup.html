@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="images/logo.png">
  
-  <title>&lt;Translate It&gt; | Sign Up</title>
+  <title>&lt;Translate IT&gt; | Sign Up</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -186,7 +186,7 @@
 </head>
 <body>
   <header>
-    <a class="brand" href="index.html">&lt;Translate It&gt;</a>
+    <a class="brand" href="index.html">&lt;Translate IT&gt;</a>
     <nav aria-label="Main navigation">
       <a href="index.html">Home</a>
       <a href="login.html">Log in</a>
@@ -196,7 +196,7 @@
   <main>
     <section class="card" aria-labelledby="signup-title">
       <h1 id="signup-title">Create your account</h1>
-      <p class="intro">Join &lt;Translate It&gt; and make communication easier for everyone.</p>
+      <p class="intro">Join &lt;Translate IT&gt; and make communication easier for everyone.</p>
       <form action="#" method="post">
         <label for="name">Full name</label>
         <input type="text" id="name" name="name" autocomplete="name" placeholder="Enter your full name" required>
@@ -224,7 +224,7 @@
     document.querySelector('form').addEventListener('submit', function (event) {
       event.preventDefault();
       const username = nameInput.value.trim();
-      localStorage.setItem('translateItUsername', username);
+      localStorage.setITem('translateITUsername', username);
       window.location.href = 'translate.html?username=' + encodeURIComponent(username);
     });
   </script>
