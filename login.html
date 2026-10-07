@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="images/logo.png">
+	<title>&lt;Translate It&gt; | Log In</title>
+	<style>
+		:root {
+			--panel-2: #1f2937;
+			--primary: #38bdf8;
+			--primary-2: #8b5cf6;
+			--text: #e5e7eb;
+			--muted: #94a3b8;
+			--accent: #34d399;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: Arial, sans-serif;
+			color: var(--text);
+			background: linear-gradient(135deg, #020817, #0f172a 45%, #111827);
+		}
+
+		header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 22px 8%;
+			background: linear-gradient(135deg, #020817, #0f172a 45%, #111827);
+			border-bottom: 1px solid #2d3754;
+			box-shadow: 0 12px 35px rgba(0, 0, 0, 0.28);
+		}
+
+		.brand {
+			color: var(--accent);
+			font-size: 1.45rem;
+			font-weight: 700;
+			text-decoration: none;
+		}
+
+		nav a {
+			margin-left: 24px;
+			color: #c1c9dc;
+			font-size: 0.95rem;
+			text-decoration: none;
+		}
+
+		nav a:hover { color: var(--accent); transition: color 0.75s ease-in-out; }
+
+		main {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			padding: 55px 20px;
+		}
+
+		.card {
+			width: 100%;
+			max-width: 460px;
+			padding: 38px;
+			background: rgba(17, 24, 39, 0.9);
+			border: 1px solid #303b5b;
+			border-radius: 16px;
+			box-shadow: 0 12px 35px rgba(0, 0, 0, 0.28);
+		}
+
+		h1 { margin: 0 0 8px; text-align: center; font-size: 2rem; }
+		.intro { margin: 0 0 28px; color: var(--muted); text-align: center; line-height: 1.5; }
+		label { display: block; margin: 16px 0 7px; font-size: 0.9rem; font-weight: 600; }
+
+		input {
+			width: 100%;
+			padding: 13px 14px;
+			border: 1px solid #303b5b;
+			border-radius: 8px;
+			background: var(--panel-2);
+			color: var(--text);
+			font-size: 1rem;
+		}
+
+		input:focus { outline: 3px solid var(--primary-2); border-color: var(--primary); }
+
+		.forgot, .signup { color: var(--muted); text-align: center; font-size: 0.9rem; }
+		.forgot { margin: 18px 0 22px; text-align: right; }
+		.forgot a, .signup a { color: var(--accent); text-decoration: none; font-weight: 600; }
+		.forgot a:hover, .signup a:hover { color: var(--primary-2); transition: color 0.75s ease-in-out; }
+
+		button {
+			width: 100%;
+			padding: 14px;
+			border: 1px solid var(--accent);
+			border-radius: 8px;
+			background: rgba(52, 211, 153, 0.12);
+			color: var(--accent);
+			font-size: 1rem;
+			font-weight: 700;
+			cursor: pointer;
+			transition: background 0.75s ease-in-out, color 0.75s ease-in-out;
+		}
+
+		button:hover { background: var(--primary-2); color: var(--text); border-color: var(--primary-2); }
+		.signup { margin: 22px 0 0; }
+
+		@media (max-width: 520px) {
+			header { padding: 18px 5%; }
+			nav a { margin-left: 12px; }
+			.card { padding: 28px 22px; }
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<a class="brand" href="index.html">&lt;Translate It&gt;</a>
+		<nav aria-label="Main navigation">
+			<a href="index.html">Home</a>
+			<a href="signup.html">Sign up</a>
+		</nav>
+	</header>
+
+	<main>
+		<section class="card" aria-labelledby="login-title">
+			<h1 id="login-title">Welcome back</h1>
+			<p class="intro">Log in to continue using &lt;Translate It&gt;.</p>
+			<form action="#" method="post">
+				<label for="email">Email address</label>
+				<input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+				<label for="password">Password</label>
+				<input type="password" id="password" name="password" autocomplete="current-password" placeholder="Enter your password" required>
+				<p class="forgot"><a href="#">Forgot password?</a></p>
+				<button type="submit">Log in</button>
+			</form>
+			<p class="signup">Don't have an account? <a href="signup.html">Sign up</a></p>
+		</section>
+	</main>
+	<script>
+		document.querySelector('form').addEventListener('submit', function (event) {
+			event.preventDefault();
+			window.location.href = 'translate.html';
+		});
+	</script>
+</body>
+</html>

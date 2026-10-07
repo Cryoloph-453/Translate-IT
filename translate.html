@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>&lt;Translate It&gt; | Translate</title>
+        <link rel="stylesheet" href="style/externalstyle.css"/>
+        <link rel="icon" type="image/png" href="images/logo.png">
+
+        <style>
+
+            
+
+         </style>
+
+    </head>
+    
+    <body>
+
+        <div class="app">
+
+            <h1>&lt;<span class="title"></span>Translate IT</span>&gt;</h1>
+            <p class="sign-in-status" id="signInStatus">Not signed in</p>
+
+            <p class="subtitle">Convert code snippets between common programming languages.</p>
+
+            <div class="controls">
+            <div class="field">
+                <label for="fromLang">From</label>
+                <select id="fromLang">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="csharp">C#</option>
+                <option value="cpp">C++</option>
+                <option value="php">PHP</option>
+                <option value="ruby">Ruby</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="toLang">To</label>
+                <select id="toLang">
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript</option>
+                <option value="java">Java</option>
+                <option value="csharp">C#</option>
+                <option value="cpp">C++</option>
+                <option value="php">PHP</option>
+                <option value="ruby">Ruby</option>
+                </select>
+            </div>
+
+            <button class="primary-btn" id="translateBtn">Translate</button>
+            <button class="secondary-btn" id="swapBtn" type="button">Swap</button>
+            </div>
+
+            <div class="editor-grid">
+            <div class="panel">
+                <div class="panel-header">
+                <span>Source code</span>
+                </div>
+                <textarea id="inputCode" spellcheck="false">
+function greet(name) {
+    console.log("Hello, " + name + "!");
+    return "Welcome";
+}
+        
+let msg = greet("Ava");
+if (msg === "Welcome") {
+    console.log("Success");
+}
+                </textarea>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                <span>Translated code</span>
+                </div>
+                <textarea id="outputCode" spellcheck="false" readonly></textarea>
+            </div>
+            </div>
+
+            <div class="sample-row">
+            <button class="sample-btn" id="sampleBtn">Load sample</button>
+            <button class="secondary-btn" id="copyBtn" type="button">Copy output</button>
+            <div class="status" id="statusText">Ready to translate</div>
+            </div>
+
+            <div id="historySection" hidden>
+                <h2>Recent activity</h2>
+                <button class="secondary-btn" id="clearHistoryBtn" type="button">Clear history</button>
+                <ul id="historyList"></ul>
+            </div>
+        </div>
+
+        <script>
+            const inputCode = document.getElementById("inputCode");
+            const outputCode = document.getElementById("outputCode");
+            const fromLang = document.getElementById("fromLang");
+            const toLang = document.getElementById("toLang");
+            const statusText = document.getElementById("statusText");
+            const signInStatus = document.getElementById("signInStatus");
+            const historySection = document.getElementById("historySection");
+            const historyList = document.getElementById("historyList");
+            const historyKey = "translateItActivity";
+
+            function getActivity() {
+                try {
+                    const activity = JSON.parse(sessionStorage.getItem(historyKey) || "[]");
+                    return Array.isArray(activity) ? activity : [];
+                } catch {
+                    return [];
+                }
+            }
+
+            function renderHistory() {
+                const signedIn = Boolean(getSignedInUsername());
+                historySection.hidden = false;
+                if (!signedIn) {
+                    historyList.innerHTML = "<li>Sign in to see history.</li>";
+                    return;
+                }
+                const activity = getActivity();
+                historyList.innerHTML = activity.length
+                    ? activity.map(item => `<li>${item.time} — ${item.action}</li>`).join("")
+                    : "<li>No recent activity.</li>";
+            }
+
+            function recordActivity(action) {
+                if (!getSignedInUsername()) return;
+                const activity = getActivity();
+                activity.unshift({
+                    action,
+                    time: new Date().toLocaleString()
+                });
+                sessionStorage.setItem(historyKey, JSON.stringify(activity.slice(0, 50)));
+                renderHistory();
+            }
+
+            function getSignedInUsername() {
+                const params = new URLSearchParams(window.location.search);
+                const guest = params.get("guest") === "true" || params.get("mode") === "guest" ||
+                    localStorage.getItem("translateItGuest") === "true" ||
+                    sessionStorage.getItem("translateItGuest") === "true";
+                if (guest) {
+                    const accountKeys = ["translateItUsername", "username", "userName", "currentUser",
+                        "loggedInUser", "loggedInUsername", "user", "account"];
+                    accountKeys.forEach(key => {
+                        localStorage.removeItem(key);
+                        sessionStorage.removeItem(key);
+                    });
+                    localStorage.removeItem(historyKey);
+                    sessionStorage.removeItem(historyKey);
+                    return "";
+                }
+                const usernameFromUrl = params.get("username");
+                if (usernameFromUrl) {
+                    sessionStorage.setItem("translateItUsername", usernameFromUrl);
+                    return usernameFromUrl;
+                }
+
+                const keys = ["translateItUsername", "username", "userName", "currentUser", "loggedInUser", "loggedInUsername", "user", "account"];
+                for (const storage of [localStorage, sessionStorage]) {
+                    for (const key of keys) {
+                        const value = storage.getItem(key);
+                        if (!value) continue;
+                        try {
+                            const user = JSON.parse(value);
+                            if (typeof user === "string") return user;
+                            if (!user || typeof user !== "object") continue;
+                            const name = user.username || user.userName || user.displayName || user.name || user.fullName || user.email;
+                            if (name) return name;
+                        } catch {
+                            return value;
+                        }
+                    }
+                }
+                return "";
+            }
+
+            function updateSignInStatus() {
+                const username = getSignedInUsername();
+                signInStatus.textContent = username || "Not signed in";
+                renderHistory();
+            }
+
+            updateSignInStatus();
+            window.addEventListener("storage", updateSignInStatus);
+            window.addEventListener("userLoggedIn", updateSignInStatus);
+            window.addEventListener("userSignedUp", updateSignInStatus);
+            setInterval(updateSignInStatus, 500);
+
+            // Keep activity and account data limited to this tab and clear it when leaving.
+            window.addEventListener("pagehide", () => {
+                sessionStorage.removeItem(historyKey);
+                ["translateItUsername", "username", "userName", "currentUser", "loggedInUser",
+                    "loggedInUsername", "user", "account"].forEach(key => {
+                    localStorage.removeItem(key);
+                    sessionStorage.removeItem(key);
+                });
+            });
+
+            function translateCode(code, from, to) {
+                if (from === to) return code;
+
+                // Normalize every supported source language, then render the target syntax.
+                let normalized = code
+                    .replace(/System\.out\.println\((.*?)\);?/g, "console.log($1);")
+                    .replace(/Console\.WriteLine\((.*?)\);?/g, "console.log($1);")
+                    .replace(/std::cout\s*<<\s*(.*?)\s*<<\s*std::endl\s*;?/g, "console.log($1);")
+                    .replace(/echo\s+(.+?);?/g, "console.log($1);")
+                    .replace(/^\s*puts\s+(.+?);?\s*$/gm, "console.log($1);")
+                    .replace(/(?:public\s+)?static\s+void\s+(\w+)\s*\((.*?)\)\s*\{/g, "function $1($2) {")
+                    .replace(/(?:public|private|protected)?\s*(?:static\s+)?(?:String|int|double|float|bool|boolean|var|auto|std::string)\s+(\w+)\s*=\s*/g, "let $1 = ")
+                    .replace(/print\((.*?)\)/g, "console.log($1);")
+                    .replace(/def\s+(\w+)\s*\((.*?)\):/g, "function $1($2) {")
+                    .replace(/^\s*if\s+(.+?):\s*$/gm, "if ($1) {")
+                    .replace(/^\s*else:\s*$/gm, "} else {")
+                    .replace(/\b(?:let|const|var)\s+/g, "let ")
+                    .replace(/===/g, "==");
+
+                if (to === "python") {
+                    let depth = 0;
+                    return normalized.split("\n").map(line => {
+                        const trimmed = line.trim();
+                        if (!trimmed) return "";
+                        if (trimmed.startsWith("}")) depth = Math.max(0, depth - 1);
+                        if (trimmed === "}") return "";
+                        const result = trimmed
+                            .replace(/^function\s+(\w+)\s*\((.*?)\)\s*\{?$/, "def $1($2):")
+                            .replace(/^if\s*\((.*?)\)\s*\{?$/, "if $1:")
+                            .replace(/^\}\s*else\s*\{?$/, "else:")
+                            .replace(/^console\.log\((.*?)\);?$/, "print($1)")
+                            .replace(/^let\s+/, "")
+                            .replace(/;$/, "")
+                            .replace(/==+/g, "==");
+                        const output = "    ".repeat(depth) + result;
+                        if (trimmed.endsWith("{")) depth++;
+                        return output;
+                    }).filter(Boolean).join("\n");
+                }
+
+                if (to === "java") {
+                    return normalized
+                        .replace(/function\s+(\w+)\s*\((.*?)\)\s*\{/g, "public static void $1($2) {")
+                        .replace(/console\.log\((.*?)\);?/g, "System.out.println($1);")
+                        .replace(/\blet\s+/g, "var ");
+                }
+
+                if (to === "csharp") {
+                    return normalized
+                        .replace(/function\s+(\w+)\s*\((.*?)\)\s*\{/g, "static void $1($2) {")
+                        .replace(/console\.log\((.*?)\);?/g, "Console.WriteLine($1);")
+                        .replace(/\blet\s+/g, "var ");
+                }
+
+                if (to === "cpp") {
+                    return normalized
+                        .replace(/function\s+(\w+)\s*\((.*?)\)\s*\{/g, "int $1($2) {")
+                        .replace(/console\.log\((.*?)\);?/g, "std::cout << $1 << std::endl;")
+                        .replace(/\blet\s+/g, "auto ");
+                }
+
+                if (to === "php") {
+                    return normalized
+                        .replace(/function\s+(\w+)\s*\((.*?)\)\s*\{/g, "function $1($2) {")
+                        .replace(/console\.log\((.*?)\);?/g, "echo $1;")
+                        .replace(/\blet\s+/g, "\$");
+                }
+
+                if (to === "ruby") {
+                    return normalized
+                        .replace(/function\s+(\w+)\s*\((.*?)\)\s*\{/g, "def $1($2)")
+                        .replace(/\}\s*else\s*\{/g, "else")
+                        .replace(/if\s*\((.*?)\)\s*\{/g, "if $1")
+                        .replace(/console\.log\((.*?)\);?/g, "puts $1")
+                        .replace(/\blet\s+/g, "")
+                        .replace(/\s*\}/g, "\nend")
+                        .replace(/;\s*/g, "\n");
+                }
+
+                return normalized;
+            }
+
+            document.getElementById("translateBtn").addEventListener("click", () => {
+                outputCode.value = translateCode(inputCode.value, fromLang.value, toLang.value);
+                statusText.textContent = "Translation complete";
+                recordActivity(`Translated ${fromLang.options[fromLang.selectedIndex].text} to ${toLang.options[toLang.selectedIndex].text}`);
+            });
+
+            document.getElementById("swapBtn").addEventListener("click", () => {
+                const language = fromLang.value;
+                fromLang.value = toLang.value;
+                toLang.value = language;
+                const code = inputCode.value;
+                inputCode.value = outputCode.value;
+                outputCode.value = code;
+                statusText.textContent = "Languages swapped";
+                recordActivity(`Swapped ${fromLang.options[fromLang.selectedIndex].text} and ${toLang.options[toLang.selectedIndex].text}`);
+            });
+
+            document.getElementById("sampleBtn").addEventListener("click", () => {
+                inputCode.value = 'function greet(name) {\n    console.log("Hello, " + name + "!");\n    return "Welcome";\n}';
+                outputCode.value = "";
+                statusText.textContent = "Sample loaded";
+                recordActivity("Loaded a sample");
+            });
+
+            document.getElementById("copyBtn").addEventListener("click", () => {
+                navigator.clipboard.writeText(outputCode.value);
+                statusText.textContent = "Output copied";
+                recordActivity("Copied translated output");
+            });
+
+            document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+                sessionStorage.removeItem(historyKey);
+                renderHistory();
+            });
+        </script>
+
+    </body>
+
+</html>
